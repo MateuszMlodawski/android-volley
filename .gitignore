@@ -3,4 +3,6 @@ gen
 build
 target
 .gradle
-
+.settings/
+.classpath
+project.properties
