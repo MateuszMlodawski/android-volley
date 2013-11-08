@@ -16,12 +16,11 @@
 
 package com.android.volley;
 
+import java.util.concurrent.BlockingQueue;
+
 import android.net.TrafficStats;
 import android.os.Build;
 import android.os.Process;
-import android.util.Log;
-
-import java.util.concurrent.BlockingQueue;
 
 import com.android.volley.Request.Priority;
 
