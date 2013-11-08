@@ -431,12 +431,15 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     /**
      * Priority values.  Requests will be processed from higher priorities to
      * lower priorities, in FIFO order.
+     * 
+     * Request with CRITICAL priority will block executing other requests.
      */
     public enum Priority {
         LOW,
         NORMAL,
         HIGH,
-        IMMEDIATE
+        IMMEDIATE,
+        CRITICAL
     }
 
     /**

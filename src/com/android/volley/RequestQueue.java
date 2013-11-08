@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.android.volley.Request.Priority;
+
 /**
  * A request dispatch queue with a thread pool of dispatchers.
  *
@@ -264,8 +266,12 @@ public class RequestQueue {
      */
     void finish(Request request) {
         // Remove from the set of requests currently being processed.
+    	// If the request is CRITICAL, remove it from CriticalRequests list.
         synchronized (mCurrentRequests) {
             mCurrentRequests.remove(request);
+            if (request.getPriority() == Priority.CRITICAL) {
+            	RequestQueueManager.getInstance().getCriticalRequests().remove(request.getCacheKey());
+            }
         }
 
         if (request.shouldCache()) {

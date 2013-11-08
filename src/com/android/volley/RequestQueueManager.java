@@ -16,8 +16,12 @@
 
 package com.android.volley;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 
+import com.android.volley.Request.Priority;
 import com.android.volley.toolbox.Volley;
 
 /**
@@ -29,8 +33,11 @@ public final class RequestQueueManager {
 	
 	private static RequestQueue mRequestQueue;
 	
+	private static List<String> mCriticalRequests;
+	
 	private RequestQueueManager(Context context) {
 		mRequestQueue = Volley.newRequestQueue(context);
+		mCriticalRequests = new ArrayList<String>();
 	}
 	
 	
@@ -61,6 +68,14 @@ public final class RequestQueueManager {
 	 */
 	public RequestQueue getRequestQueue() {
 		return mRequestQueue;
+	}
+
+
+	/**
+	 * @return List of CRITICAL {@link Priority} requests.
+	 */
+	public List<String> getCriticalRequests() {
+		return mCriticalRequests;
 	}
 
 }

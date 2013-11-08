@@ -19,8 +19,11 @@ package com.android.volley;
 import android.net.TrafficStats;
 import android.os.Build;
 import android.os.Process;
+import android.util.Log;
 
 import java.util.concurrent.BlockingQueue;
+
+import com.android.volley.Request.Priority;
 
 /**
  * Provides a thread for performing network dispatch from a queue of requests.
@@ -76,6 +79,13 @@ public class NetworkDispatcher extends Thread {
         Request request;
         while (true) {
             try {
+            	
+            	// If there is a CRITICAL request in flight, do not take other request
+            	// from queue until its finished.
+            	if (!RequestQueueManager.getInstance().getCriticalRequests().isEmpty()) {
+            		continue;
+            	}
+            	
                 // Take a request from the queue.
                 request = mQueue.take();
             } catch (InterruptedException e) {
@@ -88,6 +98,12 @@ public class NetworkDispatcher extends Thread {
 
             try {
                 request.addMarker("network-queue-take");
+                
+                // If the request is CRITICAL, add its cache key to CriticalRequests list.
+                // Other dispatchers will wait until its finished.
+                if (request.getPriority() == Priority.CRITICAL) {
+                	RequestQueueManager.getInstance().getCriticalRequests().add(request.getCacheKey());
+                }
 
                 // If the request was cancelled already, do not perform the
                 // network request.
