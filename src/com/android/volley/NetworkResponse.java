@@ -38,6 +38,7 @@ public class NetworkResponse {
         this.data = data;
         this.headers = headers;
         this.notModified = notModified;
+        this.sData = new String(data);
     }
 
     public NetworkResponse(byte[] data) {
@@ -59,4 +60,7 @@ public class NetworkResponse {
 
     /** True if the server returned a 304 (Not Modified). */
     public final boolean notModified;
+    
+    /** String representation of response raw data */
+    public final String sData;
 }
