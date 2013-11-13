@@ -22,6 +22,7 @@ import java.util.List;
 import android.content.Context;
 
 import com.android.volley.Request.Priority;
+import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.Volley;
 
 /**
@@ -40,6 +41,11 @@ public final class RequestQueueManager {
 		mCriticalRequests = new ArrayList<String>();
 	}
 	
+	private RequestQueueManager(Context context, HttpStack stack) {
+		mRequestQueue = Volley.newRequestQueue(context, stack);
+		mCriticalRequests = new ArrayList<String>();
+	}
+	
 	
 	/**
      * Creates a default instance of this singleton
@@ -53,9 +59,20 @@ public final class RequestQueueManager {
 	}
 	
 	/**
+     * Creates a default instance of this singleton
+     * 
+     * @param context A {@link Context} to use for creating the cache dir.
+     */
+	public static synchronized void initialize(Context context, HttpStack stack) {
+		if (mInstance == null) {
+			mInstance = new RequestQueueManager(context, stack);
+		}
+	}
+	
+	/**
 	 * @return {@link RequestQueueManager} instance.
 	 */
-	public static RequestQueueManager getInstance() {
+	public static synchronized RequestQueueManager getInstance() {
 		if (mInstance == null) {
 			throw new IllegalStateException("getInstance called before initialize");
 		}
