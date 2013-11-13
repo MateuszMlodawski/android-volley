@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Process;
 
 import com.android.volley.Request.Priority;
+import com.android.volley.Request.DispatcherType;
 
 /**
  * Provides a thread for performing network dispatch from a queue of requests.
@@ -96,6 +97,7 @@ public class NetworkDispatcher extends Thread {
             }
 
             try {
+            	request.setDispatcherType(DispatcherType.NETWORK);
                 request.addMarker("network-queue-take");
                 
                 // If the request is CRITICAL, add its cache key to CriticalRequests list.

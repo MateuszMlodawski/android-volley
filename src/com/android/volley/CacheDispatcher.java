@@ -20,6 +20,8 @@ import android.os.Process;
 
 import java.util.concurrent.BlockingQueue;
 
+import com.android.volley.Request.DispatcherType;
+
 /**
  * Provides a thread for performing cache triage on a queue of requests.
  *
@@ -89,6 +91,7 @@ public class CacheDispatcher extends Thread {
                 // Get a request from the cache triage queue, blocking until
                 // at least one is available.
                 final Request request = mCacheQueue.take();
+                request.setDispatcherType(DispatcherType.CACHE);
                 request.addMarker("cache-queue-take");
 
                 // If the request has been canceled, don't bother dispatching it.

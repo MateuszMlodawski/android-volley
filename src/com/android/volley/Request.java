@@ -103,6 +103,9 @@ public abstract class Request<T> implements Comparable<Request<T>> {
 
     /** An opaque token tagging this request; used for bulk cancellation. */
     private Object mTag;
+    
+    /** Dispatcher type of this request. */
+    private DispatcherType mDispatcherType = DispatcherType.UNKNOWN;
 
     /**
      * Creates a new request with the given URL and error listener.  Note that
@@ -280,6 +283,30 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public boolean isCanceled() {
         return mCanceled;
+    }
+    
+    /**
+     * Dispatcher types.
+     */
+    public enum DispatcherType {
+        CACHE,
+        NETWORK,
+        UNKNOWN
+    }
+    
+    /**
+     * Returns the dispatcher type. UNKNOWN by default.
+     * @return {@link DispatcherType} Type of dispatcher which is processing this request. 
+     */
+    public DispatcherType getDispatcherType() {
+    	return mDispatcherType;
+    }
+    
+    /**
+     * Sets the dispatcher type.
+     */
+    public void setDispatcherType(DispatcherType dispatcherType) {
+    	mDispatcherType = dispatcherType;
     }
 
     /**
