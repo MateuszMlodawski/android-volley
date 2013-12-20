@@ -36,8 +36,8 @@ public final class RequestQueueManager {
 	
 	private static List<String> mCriticalRequests;
 	
-	private RequestQueueManager(Context context) {
-		mRequestQueue = Volley.newRequestQueue(context);
+	private RequestQueueManager(Context context, HttpStack stack, Cache cache) {
+		mRequestQueue = Volley.newRequestQueue(context, stack, cache);
 		mCriticalRequests = new ArrayList<String>();
 	}
 	
@@ -46,6 +46,35 @@ public final class RequestQueueManager {
 		mCriticalRequests = new ArrayList<String>();
 	}
 	
+	private RequestQueueManager(Context context) {
+		mRequestQueue = Volley.newRequestQueue(context);
+		mCriticalRequests = new ArrayList<String>();
+	}
+	
+	/**
+     * Creates a default instance of this singleton
+     * 
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack A {@link HttpStack} to use.
+     * @param cache A {@link Cache} to use.
+     */
+	public static synchronized void initialize(Context context, HttpStack stack, Cache cache) {
+		if (mInstance == null) {
+			mInstance = new RequestQueueManager(context, stack, cache);
+		}
+	}
+	
+	/**
+     * Creates a default instance of this singleton
+     * 
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack A {@link HttpStack} to use.
+     */
+	public static synchronized void initialize(Context context, HttpStack stack) {
+		if (mInstance == null) {
+			mInstance = new RequestQueueManager(context, stack);
+		}
+	}
 	
 	/**
      * Creates a default instance of this singleton
@@ -55,17 +84,6 @@ public final class RequestQueueManager {
 	public static synchronized void initialize(Context context) {
 		if (mInstance == null) {
 			mInstance = new RequestQueueManager(context);
-		}
-	}
-	
-	/**
-     * Creates a default instance of this singleton
-     * 
-     * @param context A {@link Context} to use for creating the cache dir.
-     */
-	public static synchronized void initialize(Context context, HttpStack stack) {
-		if (mInstance == null) {
-			mInstance = new RequestQueueManager(context, stack);
 		}
 	}
 	
