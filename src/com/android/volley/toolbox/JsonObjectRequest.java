@@ -16,6 +16,7 @@
 
 package com.android.volley.toolbox;
 
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
@@ -65,8 +66,9 @@ public class JsonObjectRequest extends JsonRequest<JSONObject> {
         try {
             String jsonString =
                 new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-            return Response.success(new JSONObject(jsonString),
-                    HttpHeaderParser.parseCacheHeaders(response));
+            
+            return Response.success(new Cache.Entry<JSONObject>(new JSONObject(jsonString),
+            		response.data, HttpHeaderParser.parseHeaders(response)));
         } catch (UnsupportedEncodingException e) {
             return Response.error(new ParseError(e));
         } catch (JSONException je) {

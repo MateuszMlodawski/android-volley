@@ -30,13 +30,24 @@ import java.util.Map;
  */
 public class HttpHeaderParser {
 
+	/**
+     * Extracts a {@link Cache.Entry.NetworkHeaders} from a {@link NetworkResponse}.
+     *
+     * @param response The network response to parse headers from
+     * @return a cache entry for the given response, or null if the response is not cacheable.
+     * @deprecated Use {@link #parseHeaders(NetworkResponse) instead.}
+     */
+    public static Cache.Entry<?> parseCacheHeaders(NetworkResponse response) {
+    	Cache.Entry.NetworkHeaders headers = parseHeaders(response);
+    	return new Cache.Entry<Object>(null, response.data, headers);
+    }
     /**
-     * Extracts a {@link Cache.Entry} from a {@link NetworkResponse}.
+     * Extracts a {@link Cache.Entry.NetworkHeaders} from a {@link NetworkResponse}.
      *
      * @param response The network response to parse headers from
      * @return a cache entry for the given response, or null if the response is not cacheable.
      */
-    public static Cache.Entry parseCacheHeaders(NetworkResponse response) {
+    public static Cache.Entry.NetworkHeaders parseHeaders(NetworkResponse response) {
         long now = System.currentTimeMillis();
 
         Map<String, String> headers = response.headers;
@@ -90,15 +101,14 @@ public class HttpHeaderParser {
             softExpire = now + (serverExpires - serverDate);
         }
 
-        Cache.Entry entry = new Cache.Entry();
-        entry.data = response.data;
-        entry.etag = serverEtag;
-        entry.softTtl = softExpire;
-        entry.ttl = entry.softTtl;
-        entry.serverDate = serverDate;
-        entry.responseHeaders = headers;
+        Cache.Entry.NetworkHeaders networkHeaders = new Cache.Entry.NetworkHeaders();
+        networkHeaders.etag = serverEtag;
+        networkHeaders.softTtl = softExpire;
+        networkHeaders.ttl = networkHeaders.softTtl;
+        networkHeaders.serverDate = serverDate;
+        networkHeaders.responseHeaders = headers;
 
-        return entry;
+        return networkHeaders;
     }
 
     /**

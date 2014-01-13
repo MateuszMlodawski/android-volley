@@ -16,6 +16,7 @@
 
 package com.android.volley.toolbox;
 
+import com.android.volley.Cache;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
@@ -177,7 +178,8 @@ public class ImageRequest extends Request<Bitmap> {
         if (bitmap == null) {
             return Response.error(new ParseError(response));
         } else {
-            return Response.success(bitmap, HttpHeaderParser.parseCacheHeaders(response));
+        	return Response.success(new Cache.Entry<Bitmap>(bitmap, response.data,
+        			HttpHeaderParser.parseHeaders(response)));
         }
     }
 

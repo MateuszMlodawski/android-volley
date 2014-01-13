@@ -99,7 +99,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * the network, the cache entry will be stored here so that in the event of
      * a "Not Modified" response, we can be sure it hasn't been evicted from cache.
      */
-    private Cache.Entry mCacheEntry = null;
+    private Cache.Entry<T> mCacheEntry = null;
 
     /** An opaque token tagging this request; used for bulk cancellation. */
     private Object mTag;
@@ -260,14 +260,14 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Annotates this request with an entry retrieved for it from cache.
      * Used for cache coherency support.
      */
-    public void setCacheEntry(Cache.Entry entry) {
+    public void setCacheEntry(Cache.Entry<T> entry) {
         mCacheEntry = entry;
     }
 
     /**
      * Returns the annotated cache entry, or null if there isn't one.
      */
-    public Cache.Entry getCacheEntry() {
+    public Cache.Entry<T> getCacheEntry() {
         return mCacheEntry;
     }
 

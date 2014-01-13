@@ -16,6 +16,7 @@
 
 package com.android.volley.toolbox;
 
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -68,6 +69,8 @@ public class StringRequest extends Request<String> {
         } catch (UnsupportedEncodingException e) {
             parsed = new String(response.data);
         }
-        return Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));
+        
+        return Response.success(new Cache.Entry<String>(parsed, response.data,
+        		HttpHeaderParser.parseHeaders(response)));
     }
 }

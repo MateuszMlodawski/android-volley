@@ -16,11 +16,6 @@
 
 package com.android.volley.toolbox;
 
-import android.os.SystemClock;
-
-import com.android.volley.Cache;
-import com.android.volley.VolleyLog;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +29,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import android.os.SystemClock;
+
+import com.android.volley.Cache;
+import com.android.volley.VolleyLog;
 
 /**
  * Cache implementation that caches files directly onto the hard disk in the specified
@@ -102,7 +102,7 @@ public class DiskBasedCache implements Cache {
      * Returns the cache entry with the specified key if it exists, null otherwise.
      */
     @Override
-    public synchronized Entry get(String key) {
+    public synchronized Entry<?> get(String key) {
         CacheHeader entry = mEntries.get(key);
         // if the entry does not exist, return.
         if (entry == null) {
@@ -176,11 +176,11 @@ public class DiskBasedCache implements Cache {
      */
     @Override
     public synchronized void invalidate(String key, boolean fullExpire) {
-        Entry entry = get(key);
+        Entry<?> entry = get(key);
         if (entry != null) {
-            entry.softTtl = 0;
+            entry.networkHeaders.softTtl = 0;
             if (fullExpire) {
-                entry.ttl = 0;
+                entry.networkHeaders.ttl = 0;
             }
             put(key, entry);
         }
@@ -191,7 +191,7 @@ public class DiskBasedCache implements Cache {
      * Puts the entry with the specified key into the cache.
      */
     @Override
-    public synchronized void put(String key, Entry entry) {
+    public synchronized void put(String key, Entry<?> entry) {
         pruneIfNeeded(entry.data.length);
         File file = getFileForKey(key);
         try {
@@ -359,14 +359,14 @@ public class DiskBasedCache implements Cache {
          * @param key The key that identifies the cache entry
          * @param entry The cache entry.
          */
-        public CacheHeader(String key, Entry entry) {
+        public CacheHeader(String key, Entry<?> entry) {
             this.key = key;
             this.size = entry.data.length;
-            this.etag = entry.etag;
-            this.serverDate = entry.serverDate;
-            this.ttl = entry.ttl;
-            this.softTtl = entry.softTtl;
-            this.responseHeaders = entry.responseHeaders;
+            this.etag = entry.networkHeaders.etag;
+            this.serverDate = entry.networkHeaders.serverDate;
+            this.ttl = entry.networkHeaders.ttl;
+            this.softTtl = entry.networkHeaders.softTtl;
+            this.responseHeaders = entry.networkHeaders.responseHeaders;
         }
 
         /**
@@ -396,14 +396,13 @@ public class DiskBasedCache implements Cache {
         /**
          * Creates a cache entry for the specified data.
          */
-        public Entry toCacheEntry(byte[] data) {
-            Entry e = new Entry();
-            e.data = data;
-            e.etag = etag;
-            e.serverDate = serverDate;
-            e.ttl = ttl;
-            e.softTtl = softTtl;
-            e.responseHeaders = responseHeaders;
+        public <T> Entry<T> toCacheEntry(byte[] data) {
+            Entry<T> e = new Entry<T>(data);
+            e.networkHeaders.etag = etag;
+            e.networkHeaders.serverDate = serverDate;
+            e.networkHeaders.ttl = ttl;
+            e.networkHeaders.softTtl = softTtl;
+            e.networkHeaders.responseHeaders = responseHeaders;
             return e;
         }
 

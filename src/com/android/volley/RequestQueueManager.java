@@ -105,12 +105,10 @@ public final class RequestQueueManager {
 		return mRequestQueue;
 	}
 
-
 	/**
 	 * @return List of CRITICAL {@link Priority} requests.
 	 */
 	public List<String> getCriticalRequests() {
 		return mCriticalRequests;
 	}
-
 }

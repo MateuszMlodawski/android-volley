@@ -78,6 +78,7 @@ public class CacheDispatcher extends Thread {
         interrupt();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         if (DEBUG) VolleyLog.v("start new dispatcher");
@@ -119,9 +120,14 @@ public class CacheDispatcher extends Thread {
 
                 // We have a cache hit; parse its data for delivery back to the request.
                 request.addMarker("cache-hit");
-                Response<?> response = request.parseNetworkResponse(
-                        new NetworkResponse(entry.data, entry.responseHeaders));
-                request.addMarker("cache-hit-parsed");
+                Response<?> response;
+                if (!entry.isParsed()) {
+	                response = request.parseNetworkResponse(
+	                        new NetworkResponse(entry.data, entry.networkHeaders.responseHeaders));
+	                request.addMarker("cache-hit-parsed");
+                } else {
+                	response = Response.success(entry);
+                }
 
                 if (!entry.refreshNeeded()) {
                     // Completely unexpired cache hit. Just deliver the response.
