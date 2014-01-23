@@ -99,6 +99,8 @@ public class NetworkDispatcher extends Thread {
             try {
             	request.setDispatcherType(DispatcherType.NETWORK);
                 request.addMarker("network-queue-take");
+                request.deliverDispacherChange(DispatcherType.NETWORK);
+                request.addMarker("post-dispatcher-change");
                 
                 // If the request is CRITICAL, add its cache key to CriticalRequests list.
                 // Other dispatchers will wait until its finished.

@@ -37,6 +37,15 @@ public class Response<T> {
          */
         public void onErrorResponse(VolleyError error);
     }
+    
+    /** Callback interface for delivering error responses. */
+    public interface DispatcherListener {
+        /**
+         * Callback method that an error has been occurred with the
+         * provided error code and optional user-readable message.
+         */
+        public void onDispatcherChange(Request.DispatcherType dispatcherType);
+    }
 
     /** Returns a successful response containing the parsed result. */
     public static <T> Response<T> success(T result, Cache.Entry cacheEntry) {

@@ -23,6 +23,7 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.Response.DispatcherListener;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.google.gson.Gson;
@@ -35,15 +36,32 @@ public class GsonRequest<T> extends Request<T> {
 
 
     public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener) {
-        super(method, url, errorListener);
+//        super(method, url, errorListener);
+    	super(method, url, errorListener, listener, null);
         this.mClazz = clazz;
         this.mListener = listener;
         mGson = new Gson();
     }
-
+    
+    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, DispatcherListener dispatcherListener) {
+//      super(method, url, errorListener);
+    	super(method, url, errorListener, listener, dispatcherListener);
+    	this.mClazz = clazz;
+    	this.mListener = listener;
+    	mGson = new Gson();
+  }
 
     public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, Gson gson) {
-        super(method, url, errorListener);
+//      super(method, url, errorListener, null);
+    	super(method, url, errorListener, listener, null);
+    	this.mClazz = clazz;
+    	this.mListener = listener;
+    	mGson = gson;
+  }
+
+    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, DispatcherListener dispatcherListener, Gson gson) {
+//        super(method, url, errorListener, null);
+    	super(method, url, errorListener, listener, dispatcherListener);
         this.mClazz = clazz;
         this.mListener = listener;
         mGson = gson;
