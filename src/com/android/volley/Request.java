@@ -16,6 +16,11 @@
 
 package com.android.volley;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Map;
+
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Handler;
@@ -24,11 +29,6 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.android.volley.VolleyLog.MarkerLog;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Base class for all network requests.
@@ -68,7 +68,12 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     private final int mDefaultTrafficStatsTag;
 
     /** Listener interface for errors. */
-    private final Response.ErrorListener mErrorListener;
+    private Response.ErrorListener mErrorListener;
+    
+    /** Listener interface for successes. */
+    private Response.Listener<T> mListener;
+    
+    private Response.DispatcherListener mDispatcherListener;
 
     /** Sequence number of this request, used to enforce FIFO ordering. */
     private Integer mSequence;
@@ -93,6 +98,9 @@ public abstract class Request<T> implements Comparable<Request<T>> {
 
     /** The retry policy for this request. */
     private RetryPolicy mRetryPolicy;
+    
+    /** The cache policy of this request. */
+    private Cache.Policy mCachePolicy = Cache.Policy.CACHE_THEN_NETWORK;
 
     /**
      * When a request can be retrieved from cache but must be refreshed from
@@ -108,30 +116,43 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     private DispatcherType mDispatcherType = DispatcherType.UNKNOWN;
 
     /**
-     * Creates a new request with the given URL and error listener.  Note that
+     * Creates a new request with the given URL, success and error listener. Note that
      * the normal response listener is not provided here as delivery of responses
      * is provided by subclasses, who have a better idea of how to deliver an
      * already-parsed response.
      *
      * @deprecated Use {@link #Request(int, String, com.android.volley.Response.ErrorListener)}.
      */
-    public Request(String url, Response.ErrorListener listener) {
-        this(Method.DEPRECATED_GET_OR_POST, url, listener);
+    public Request(String url, Response.ErrorListener errorListener, Response.Listener<T> listener) {
+        this(Method.DEPRECATED_GET_OR_POST, url, errorListener, listener, null);
     }
 
     /**
      * Creates a new request with the given method (one of the values from {@link Method}),
-     * URL, and error listener.  Note that the normal response listener is not provided here as
+     * URL, success and error listener. Note that the normal response listener is not provided here as
      * delivery of responses is provided by subclasses, who have a better idea of how to deliver
      * an already-parsed response.
      */
-    public Request(int method, String url, Response.ErrorListener listener) {
+    public Request(int method, String url, Response.ErrorListener errorListener, Response.Listener<T> listener,
+    		Response.DispatcherListener dispatcherListener) {
         mMethod = method;
         mUrl = url;
-        mErrorListener = listener;
+        mErrorListener = errorListener;
+        mListener = listener;
+        mDispatcherListener = dispatcherListener;
         setRetryPolicy(new DefaultRetryPolicy());
 
         mDefaultTrafficStatsTag = TextUtils.isEmpty(url) ? 0: Uri.parse(url).getHost().hashCode();
+    }
+    
+    /**
+     * Creates a new request with the given method (one of the values from {@link Method}) and URL.
+     * Note that the normal response listener is not provided here as delivery of responses is
+     * provided by subclasses, who have a better idea of how to deliver
+     * an already-parsed response.
+     */
+    public Request(int method, String url) {
+    	this(method, url, null, null, null);
     }
 
     /**
@@ -169,6 +190,13 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public void setRetryPolicy(RetryPolicy retryPolicy) {
         mRetryPolicy = retryPolicy;
+    }
+    
+    /**
+     * Sets the retry policy for this request.
+     */
+    public void setCachePolicy(Cache.Policy cachePolicy) {
+        mCachePolicy = cachePolicy;
     }
 
     /**
@@ -283,6 +311,24 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public boolean isCanceled() {
         return mCanceled;
+    }
+    
+    /**
+     * Sets the success listener of this request.
+     */
+    public void setListener(Response.Listener<T> listener) {
+    	mListener = listener;
+    }
+    
+    /**
+     * Sets the error listener of this request.
+     */
+    public void setErrorListener(Response.ErrorListener errorListener) {
+    	mErrorListener = errorListener;
+    }
+    
+    public void setDispatcherListener(Response.DispatcherListener dispatcherListener) {
+    	mDispatcherListener = dispatcherListener;
     }
     
     /**
@@ -498,6 +544,13 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     public RetryPolicy getRetryPolicy() {
         return mRetryPolicy;
     }
+    
+    /**
+     * Returns the cache policy that should be used for this request.
+     */
+    public Cache.Policy getCachePolicy() {
+        return mCachePolicy;
+    }
 
     /**
      * Mark this request as having a response delivered on it.  This can be used
@@ -537,13 +590,16 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     }
 
     /**
-     * Subclasses must implement this to perform delivery of the parsed
-     * response to their listeners.  The given response is guaranteed to
-     * be non-null; responses that fail to parse are not delivered.
+     * The given response is guaranteed to be non-null;
+     * responses that fail to parse are not delivered.
      * @param response The parsed response returned by
      * {@link #parseNetworkResponse(NetworkResponse)}
      */
-    abstract protected void deliverResponse(T response);
+    protected void deliverResponse(T response) {
+    	if (mListener != null) {
+    		mListener.onResponse(response);
+    	}
+    }
 
     /**
      * Delivers error message to the ErrorListener that the Request was
@@ -555,6 +611,12 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         if (mErrorListener != null) {
             mErrorListener.onErrorResponse(error);
         }
+    }
+    
+    public void deliverDispacherChange(Request.DispatcherType dispatcherType) {
+    	if (mDispatcherListener != null) {
+    		mDispatcherListener.onDispatcherChange(dispatcherType);
+    	}
     }
 
     /**

@@ -23,6 +23,15 @@ import java.util.Map;
  * An interface for a cache keyed by a String with a byte array as data.
  */
 public interface Cache {
+	/**
+     * Dispatcher types.
+     */
+    public enum Policy {
+        CACHE_ONLY,
+        NETWORK_ONLY,
+        CACHE_THEN_NETWORK
+    }
+    
     /**
      * Retrieves an entry from the cache.
      * @param key Cache key

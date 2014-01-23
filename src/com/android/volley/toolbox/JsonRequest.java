@@ -19,6 +19,7 @@ package com.android.volley.toolbox;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.Response.DispatcherListener;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyLog;
@@ -39,7 +40,6 @@ public abstract class JsonRequest<T> extends Request<T> {
     private static final String PROTOCOL_CONTENT_TYPE =
         String.format("application/json; charset=%s", PROTOCOL_CHARSET);
 
-    private final Listener<T> mListener;
     private final String mRequestBody;
 
     /**
@@ -55,14 +55,13 @@ public abstract class JsonRequest<T> extends Request<T> {
 
     public JsonRequest(int method, String url, String requestBody, Listener<T> listener,
             ErrorListener errorListener) {
-        super(method, url, errorListener);
-        mListener = listener;
-        mRequestBody = requestBody;
+        this(method, url, requestBody, listener, errorListener, null);
     }
-
-    @Override
-    protected void deliverResponse(T response) {
-        mListener.onResponse(response);
+    
+    public JsonRequest(int method, String url, String requestBody, Listener<T> listener,
+            ErrorListener errorListener, DispatcherListener dispatcherListener) {
+        super(method, url, errorListener, listener, dispatcherListener);
+        mRequestBody = requestBody;
     }
 
     @Override

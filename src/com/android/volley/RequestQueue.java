@@ -226,12 +226,20 @@ public class RequestQueue {
         // Process requests in the order they are added.
         request.setSequence(getSequenceNumber());
         request.addMarker("add-to-queue");
-
-        // If the request is uncacheable, skip the cache queue and go straight to the network.
-        if (!request.shouldCache()) {
-            mNetworkQueue.add(request);
-            return request;
+        
+        if (request.getCachePolicy() == Cache.Policy.NETWORK_ONLY) {
+        	mNetworkQueue.add(request);
+        	return request;
         }
+        
+        // We don't want such behavior - we have Cache.Policy for that.
+        // In particular we can add uncacheable request to the mCacheQueue.
+        
+        // If the request is uncacheable, skip the cache queue and go straight to the network.
+//        if (!request.shouldCache()) {
+//            mNetworkQueue.add(request);
+//            return request;
+//        }
 
         // Insert request into stage if there's already a request with the same cache key in flight.
         synchronized (mWaitingRequests) {

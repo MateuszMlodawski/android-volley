@@ -20,6 +20,7 @@ import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.Response.DispatcherListener;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 
@@ -29,7 +30,6 @@ import java.io.UnsupportedEncodingException;
  * A canned request for retrieving the response body at a given URL as a String.
  */
 public class StringRequest extends Request<String> {
-    private final Listener<String> mListener;
 
     /**
      * Creates a new request with the given method.
@@ -40,9 +40,13 @@ public class StringRequest extends Request<String> {
      * @param errorListener Error listener, or null to ignore errors
      */
     public StringRequest(int method, String url, Listener<String> listener,
+            ErrorListener errorListener, DispatcherListener dispatcherListener) {
+        super(method, url, errorListener, listener, dispatcherListener);
+    }
+    
+    public StringRequest(int method, String url, Listener<String> listener,
             ErrorListener errorListener) {
-        super(method, url, errorListener);
-        mListener = listener;
+        this(method, url, listener, errorListener, null);
     }
 
     /**
@@ -56,9 +60,9 @@ public class StringRequest extends Request<String> {
         this(Method.GET, url, listener, errorListener);
     }
 
-    @Override
-    protected void deliverResponse(String response) {
-        mListener.onResponse(response);
+    public StringRequest(String url, Listener<String> listener, ErrorListener errorListener,
+    		DispatcherListener dispatcherListener) {
+        this(Method.GET, url, listener, errorListener, dispatcherListener);
     }
 
     @Override

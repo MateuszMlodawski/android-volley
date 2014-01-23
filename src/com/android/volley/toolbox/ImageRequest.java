@@ -42,7 +42,6 @@ public class ImageRequest extends Request<Bitmap> {
     /** Default backoff multiplier for image requests */
     private static final float IMAGE_BACKOFF_MULT = 2f;
 
-    private final Response.Listener<Bitmap> mListener;
     private final Config mDecodeConfig;
     private final int mMaxWidth;
     private final int mMaxHeight;
@@ -68,14 +67,18 @@ public class ImageRequest extends Request<Bitmap> {
      * @param errorListener Error listener, or null to ignore errors
      */
     public ImageRequest(String url, Response.Listener<Bitmap> listener, int maxWidth, int maxHeight,
-            Config decodeConfig, Response.ErrorListener errorListener) {
-        super(Method.GET, url, errorListener);
+            Config decodeConfig, Response.ErrorListener errorListener, Response.DispatcherListener dispatcherListener) {
+        super(Method.GET, url, errorListener, listener, dispatcherListener);
         setRetryPolicy(
                 new DefaultRetryPolicy(IMAGE_TIMEOUT_MS, IMAGE_MAX_RETRIES, IMAGE_BACKOFF_MULT));
-        mListener = listener;
         mDecodeConfig = decodeConfig;
         mMaxWidth = maxWidth;
         mMaxHeight = maxHeight;
+    }
+    
+    public ImageRequest(String url, Response.Listener<Bitmap> listener, int maxWidth, int maxHeight,
+            Config decodeConfig, Response.ErrorListener errorListener) {
+        this(url, listener, maxWidth, maxHeight, decodeConfig, errorListener, null);
     }
 
     @Override
@@ -181,11 +184,6 @@ public class ImageRequest extends Request<Bitmap> {
         	return Response.success(new Cache.Entry<Bitmap>(bitmap, response.data,
         			HttpHeaderParser.parseHeaders(response)));
         }
-    }
-
-    @Override
-    protected void deliverResponse(Bitmap response) {
-        mListener.onResponse(response);
     }
 
     /**
