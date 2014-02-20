@@ -193,7 +193,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     }
     
     /**
-     * Sets the retry policy for this request.
+     * Sets the cache policy for this request.
      */
     public void setCachePolicy(Cache.Policy cachePolicy) {
         mCachePolicy = cachePolicy;

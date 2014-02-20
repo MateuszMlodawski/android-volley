@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public interface Cache {
 	/**
-     * Dispatcher types.
+     * Cache policies.
      */
     public enum Policy {
         CACHE_ONLY,
