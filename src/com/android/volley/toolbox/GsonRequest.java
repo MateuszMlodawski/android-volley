@@ -37,6 +37,10 @@ public class GsonRequest<T> extends Request<T> {
     public GsonRequest(int method, String url, Class<T> clazz) {
     	this(method, url, clazz, null, null);
     }
+    
+    public GsonRequest(int method, String url, Class<T> clazz, Gson gson) {
+    	this(method, url, clazz, null, null, gson);
+    }
 
     public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener,
     		ErrorListener errorListener) {
