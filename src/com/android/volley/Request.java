@@ -551,13 +551,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     public Cache.Policy getCachePolicy() {
         return mCachePolicy;
     }
-    
-    /**
-     * Returns the birth time for this request.
-     */
-    public long getRequestBirthTime() {
-    	return mRequestBirthTime;
-    }
 
     /**
      * Mark this request as having a response delivered on it.  This can be used
