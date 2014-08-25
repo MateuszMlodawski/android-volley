@@ -19,6 +19,8 @@ package com.android.volley;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.http.Header;
+
 /**
  * An interface for a cache keyed by a String with a byte array as data.
  */
@@ -91,6 +93,8 @@ public interface Cache {
 
         /** Immutable response headers as received from server; must be non-null. */
         public Map<String, String> responseHeaders = Collections.emptyMap();
+        
+        public Header[] apacheHeaders = new Header[] {}; 
 
         /** True if the entry is expired. */
         public boolean isExpired() {

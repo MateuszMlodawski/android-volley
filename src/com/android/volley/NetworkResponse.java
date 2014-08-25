@@ -16,10 +16,11 @@
 
 package com.android.volley;
 
-import org.apache.http.HttpStatus;
-
 import java.util.Collections;
 import java.util.Map;
+
+import org.apache.http.Header;
+import org.apache.http.HttpStatus;
 
 /**
  * Data and headers returned from {@link Network#performRequest(Request)}.
@@ -39,6 +40,17 @@ public class NetworkResponse {
         this.headers = headers;
         this.notModified = notModified;
         this.sData = new String(data);
+        this.apacheHeaders = null;
+    }
+    
+    public NetworkResponse(int statusCode, byte[] data, Map<String, String> headers,
+            boolean notModified, Header[] apacheHeaders) {
+        this.statusCode = statusCode;
+        this.data = data;
+        this.headers = headers;
+        this.notModified = notModified;
+        this.sData = new String(data);
+        this.apacheHeaders = apacheHeaders;
     }
 
     public NetworkResponse(byte[] data) {
@@ -47,6 +59,10 @@ public class NetworkResponse {
 
     public NetworkResponse(byte[] data, Map<String, String> headers) {
         this(HttpStatus.SC_OK, data, headers, false);
+    }
+    
+    public NetworkResponse(byte[] data, Map<String, String> headers, Header[] apacheHeaders) {
+        this(HttpStatus.SC_OK, data, headers, false, apacheHeaders);
     }
 
     /** The HTTP status code. */
@@ -63,4 +79,7 @@ public class NetworkResponse {
     
     /** String representation of response raw data */
     public final String sData;
+    
+    /** Fix for getting duplicate header responses */
+    public final Header[] apacheHeaders;
 }

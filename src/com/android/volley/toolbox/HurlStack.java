@@ -118,8 +118,10 @@ public class HurlStack implements HttpStack {
         response.setEntity(entityFromConnection(connection));
         for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
-                Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
-                response.addHeader(h);
+                for (String headerValue : header.getValue()) {
+                	Header h = new BasicHeader(header.getKey(), headerValue);
+                	response.addHeader(h);
+                }
             }
         }
         return response;

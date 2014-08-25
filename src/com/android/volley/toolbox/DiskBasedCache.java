@@ -16,11 +16,6 @@
 
 package com.android.volley.toolbox;
 
-import android.os.SystemClock;
-
-import com.android.volley.Cache;
-import com.android.volley.VolleyLog;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +29,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.ParseException;
+
+import android.os.SystemClock;
+
+import com.android.volley.Cache;
+import com.android.volley.VolleyLog;
 
 /**
  * Cache implementation that caches files directly onto the hard disk in the specified
@@ -351,6 +355,8 @@ public class DiskBasedCache implements Cache {
 
         /** Headers from the response resulting in this cache entry. */
         public Map<String, String> responseHeaders;
+        
+        public Header[] apacheHeaders;
 
         private CacheHeader() { }
 
@@ -367,6 +373,7 @@ public class DiskBasedCache implements Cache {
             this.ttl = entry.ttl;
             this.softTtl = entry.softTtl;
             this.responseHeaders = entry.responseHeaders;
+            this.apacheHeaders = entry.apacheHeaders;
         }
 
         /**
@@ -390,6 +397,7 @@ public class DiskBasedCache implements Cache {
             entry.ttl = readLong(is);
             entry.softTtl = readLong(is);
             entry.responseHeaders = readStringStringMap(is);
+            entry.apacheHeaders = readApacheHeaders(is);
             return entry;
         }
 
@@ -404,6 +412,7 @@ public class DiskBasedCache implements Cache {
             e.ttl = ttl;
             e.softTtl = softTtl;
             e.responseHeaders = responseHeaders;
+            e.apacheHeaders = apacheHeaders;
             return e;
         }
 
@@ -420,6 +429,7 @@ public class DiskBasedCache implements Cache {
                 writeLong(os, ttl);
                 writeLong(os, softTtl);
                 writeStringStringMap(responseHeaders, os);
+                writeApacheHeaders(apacheHeaders, os);
                 os.flush();
                 return true;
             } catch (IOException e) {
@@ -552,5 +562,50 @@ public class DiskBasedCache implements Cache {
         return result;
     }
 
+    static void writeApacheHeaders(Header[] apacheHeaders, OutputStream os) throws IOException {
+        if (apacheHeaders != null) {
+            writeInt(os, apacheHeaders.length);
+            for (int i = 0; i < apacheHeaders.length; i++) {
+            	writeString(os, apacheHeaders[i].getName());
+            	writeString(os, apacheHeaders[i].getValue());
+            }
+        } else {
+            writeInt(os, 0);
+        }
+    }
+    
+    static Header[] readApacheHeaders(InputStream is) throws IOException {
+        int size = readInt(is);
+        Header[] result = new Header[size];
+        for (int i = 0; i < size; i++) {
+            String key = readString(is).intern();
+            String value = readString(is).intern();
+            result[i] = ApacheHeaderFactory.create(key, value);
+        }
+        return result;
+    }
+    
+    private static final class ApacheHeaderFactory {
+    	public static Header create(final String name, final String value) {
+    		return new Header() {
+				
+				@Override
+				public String getValue() {
+					return value;
+				}
+				
+				@Override
+				public String getName() {
+					return name;
+				}
+				
+				@Override
+				public HeaderElement[] getElements() throws ParseException {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
+    	}
+    }
 
 }
