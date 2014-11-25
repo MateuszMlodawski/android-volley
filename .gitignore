@@ -1,3 +1,4 @@
+android-volley.iml
 bin
 gen
 build
@@ -7,3 +8,5 @@ target
 .classpath
 project.properties
 lint.xml
+.idea
+local.properties
