@@ -47,9 +47,19 @@ public class Response<T> {
         public void onDispatcherChange(Request.DispatcherType dispatcherType);
     }
 
-    /** Returns a successful response containing the parsed result. */
-    public static <T> Response<T> success(T result, Cache.Entry cacheEntry) {
+    /**
+     * Returns a successful response containing the parsed result.
+     * @deprecated Use {@link #success(com.android.volley.Cache.Entry) instead.}
+     */
+    public static <T> Response<T> success(T result, Cache.Entry<T> cacheEntry) {
         return new Response<T>(result, cacheEntry);
+    }
+    
+    /**
+     * Returns a successful response containing the parsed result.
+     */
+    public static <T> Response<T> success(Cache.Entry<T> cacheEntry) {
+        return new Response<T>(cacheEntry);
     }
 
     /**
@@ -60,11 +70,8 @@ public class Response<T> {
         return new Response<T>(error);
     }
 
-    /** Parsed response, or null in the case of error. */
-    public final T result;
-
     /** Cache metadata for this response, or null in the case of error. */
-    public final Cache.Entry cacheEntry;
+    public final Cache.Entry<T> cacheEntry;
 
     /** Detailed error information if <code>errorCode != OK</code>. */
     public final VolleyError error;
@@ -79,15 +86,19 @@ public class Response<T> {
         return error == null;
     }
 
-
-    private Response(T result, Cache.Entry cacheEntry) {
-        this.result = result;
+    /** @deprecated Use {@link #Response(com.android.volley.Cache.Entry)} instead. */
+    private Response(T result, Cache.Entry<T> cacheEntry) {
+        cacheEntry.object = result;
+        this.cacheEntry = cacheEntry;
+        this.error = null;
+    }
+    
+    private Response(Cache.Entry<T> cacheEntry) {
         this.cacheEntry = cacheEntry;
         this.error = null;
     }
 
     private Response(VolleyError error) {
-        this.result = null;
         this.cacheEntry = null;
         this.error = error;
     }

@@ -125,9 +125,14 @@ public class CacheDispatcher extends Thread {
 
                 // We have a cache hit; parse its data for delivery back to the request.
                 request.addMarker("cache-hit");
-                Response<?> response = request.parseNetworkResponse(
-                        new NetworkResponse(entry.data, entry.responseHeaders, entry.apacheHeaders));
-                request.addMarker("cache-hit-parsed");
+                Response<?> response;
+                if (!entry.isParsed()) {
+	                response = request.parseNetworkResponse(
+	                        new NetworkResponse(entry.data, entry.networkHeaders.responseHeaders, entry.networkHeaders.apacheHeaders));
+	                request.addMarker("cache-hit-parsed");
+                } else {
+                	response = Response.success(entry);
+                }
 
                 if (!entry.refreshNeeded() || request.getCachePolicy() == Cache.Policy.CACHE_ONLY) {
                     // Completely unexpired cache hit. Just deliver the response.

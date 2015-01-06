@@ -19,6 +19,7 @@ package com.android.volley.toolbox;
 
 import java.io.UnsupportedEncodingException;
 
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
@@ -32,56 +33,45 @@ import com.google.gson.JsonSyntaxException;
 public class GsonRequest<T> extends Request<T> {
     protected final Gson mGson;
     private final Class<T> mClazz;
-    private final Listener<T> mListener;
 
-
-    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener) {
-//        super(method, url, errorListener);
-    	super(method, url, errorListener, listener, null);
-        this.mClazz = clazz;
-        this.mListener = listener;
-        mGson = new Gson();
+    public GsonRequest(int method, String url, Class<T> clazz) {
+    	this(method, url, clazz, null, null);
     }
     
-    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, DispatcherListener dispatcherListener) {
-//      super(method, url, errorListener);
-    	super(method, url, errorListener, listener, dispatcherListener);
-    	this.mClazz = clazz;
-    	this.mListener = listener;
-    	mGson = new Gson();
-  }
-
-    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, Gson gson) {
-//      super(method, url, errorListener, null);
-    	super(method, url, errorListener, listener, null);
-    	this.mClazz = clazz;
-    	this.mListener = listener;
-    	mGson = gson;
-  }
-
-    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener, ErrorListener errorListener, DispatcherListener dispatcherListener, Gson gson) {
-//        super(method, url, errorListener, null);
-    	super(method, url, errorListener, listener, dispatcherListener);
-        this.mClazz = clazz;
-        this.mListener = listener;
-        mGson = gson;
+    public GsonRequest(int method, String url, Class<T> clazz, Gson gson) {
+    	this(method, url, clazz, null, null, gson);
     }
 
-    @Override
-    protected void deliverResponse(T response) {
-        mListener.onResponse(response);
+    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener,
+    		ErrorListener errorListener) {
+        this(method, url, clazz, listener, errorListener, new Gson());
+    }
+
+
+    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener,
+    		ErrorListener errorListener, Gson gson) {
+        super(method, url, errorListener, listener, null);
+        this.mClazz = clazz;
+        mGson = gson;
+    }
+    
+    public GsonRequest(int method, String url, Class<T> clazz, Listener<T> listener,
+    		ErrorListener errorListener, DispatcherListener dispatcherListener, Gson gson) {
+        super(method, url, errorListener, listener, dispatcherListener);
+        this.mClazz = clazz;
+        mGson = gson;
     }
 
     @Override
     protected Response<T> parseNetworkResponse(NetworkResponse response) {    	
         try {
             String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-            return Response.success(mGson.fromJson(json, mClazz), HttpHeaderParser.parseCacheHeaders(response));
+            return Response.success(new Cache.Entry<T>(mGson.fromJson(json, mClazz),
+            		response.data, HttpHeaderParser.parseHeaders(response)));
         } catch (UnsupportedEncodingException e) {
             return Response.error(new ParseError(e));
         } catch (JsonSyntaxException e) {
             return Response.error(new ParseError(e));
         }
     }
-
 }

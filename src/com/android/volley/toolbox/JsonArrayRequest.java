@@ -16,6 +16,7 @@
 
 package com.android.volley.toolbox;
 
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
@@ -47,8 +48,9 @@ public class JsonArrayRequest extends JsonRequest<JSONArray> {
         try {
             String jsonString =
                 new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-            return Response.success(new JSONArray(jsonString),
-                    HttpHeaderParser.parseCacheHeaders(response));
+            
+            return Response.success(new Cache.Entry<JSONArray>(new JSONArray(jsonString),
+            		response.data, HttpHeaderParser.parseHeaders(response)));
         } catch (UnsupportedEncodingException e) {
             return Response.error(new ParseError(e));
         } catch (JSONException je) {

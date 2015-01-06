@@ -89,7 +89,7 @@ public class BasicNetwork implements Network {
             try {
                 // Gather headers.
                 Map<String, String> headers = new HashMap<String, String>();
-                addCacheHeaders(headers, request.getCacheEntry());
+                addHeaders(headers, request.getCacheEntry());
                 httpResponse = mHttpStack.performRequest(request, headers);
                 StatusLine statusLine = httpResponse.getStatusLine();
                 int statusCode = statusLine.getStatusCode();
@@ -184,18 +184,18 @@ public class BasicNetwork implements Network {
         request.addMarker(String.format("%s-retry [timeout=%s]", logPrefix, oldTimeout));
     }
 
-    private void addCacheHeaders(Map<String, String> headers, Cache.Entry entry) {
+    private void addHeaders(Map<String, String> headers, Cache.Entry<?> entry) {
         // If there's no cache entry, we're done.
         if (entry == null) {
             return;
         }
 
-        if (entry.etag != null) {
-            headers.put("If-None-Match", entry.etag);
+        if (entry.networkHeaders.etag != null) {
+            headers.put("If-None-Match", entry.networkHeaders.etag);
         }
 
-        if (entry.serverDate > 0) {
-            Date refTime = new Date(entry.serverDate);
+        if (entry.networkHeaders.serverDate > 0) {
+            Date refTime = new Date(entry.networkHeaders.serverDate);
             headers.put("If-Modified-Since", DateUtils.formatDate(refTime));
         }
     }
