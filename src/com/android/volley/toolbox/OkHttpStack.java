@@ -17,31 +17,33 @@
  */
 package com.android.volley.toolbox;
 
-import com.android.volley.toolbox.HurlStack;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.OkUrlFactory;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
- 
+
 /**
  * An {@link com.android.volley.toolbox.HttpStack HttpStack} implementation which
  * uses OkHttp as its transport.
  */
 public class OkHttpStack extends HurlStack {
-  private final OkHttpClient client;
- 
-  public OkHttpStack() {
-    this(new OkHttpClient());
-  }
- 
-  public OkHttpStack(OkHttpClient client) {
-    if (client == null) {
-      throw new NullPointerException("Client must not be null.");
+    private final OkUrlFactory okUrlFactory;
+
+    public OkHttpStack() {
+        this(new OkUrlFactory(new OkHttpClient()));
     }
-    this.client = client;
-  }
- 
-  @Override protected HttpURLConnection createConnection(URL url) throws IOException {
-    return client.open(url);
-  }   
+
+    public OkHttpStack(OkUrlFactory okUrlFactory) {
+        if (okUrlFactory == null) {
+            throw new NullPointerException("Client must not be null.");
+        }
+        this.okUrlFactory = okUrlFactory;
+    }
+
+    @Override
+    protected HttpURLConnection createConnection(URL url) throws IOException {
+        return okUrlFactory.open(url);
+    }
 }
