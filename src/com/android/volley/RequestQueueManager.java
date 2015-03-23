@@ -35,7 +35,17 @@ public final class RequestQueueManager {
 	private static RequestQueue mRequestQueue;
 	
 	private static List<String> mCriticalRequests;
-	
+
+    private RequestQueueManager(Context context, HttpStack stack, Cache cache, Network network) {
+        mRequestQueue = Volley.newRequestQueue(context, stack, cache, network);
+        mCriticalRequests = new ArrayList<String>();
+    }
+
+    private RequestQueueManager(Context context, HttpStack stack, Network network) {
+        mRequestQueue = Volley.newRequestQueue(context, stack, network);
+        mCriticalRequests = new ArrayList<String>();
+    }
+
 	private RequestQueueManager(Context context, HttpStack stack, Cache cache) {
 		mRequestQueue = Volley.newRequestQueue(context, stack, cache);
 		mCriticalRequests = new ArrayList<String>();
@@ -50,6 +60,32 @@ public final class RequestQueueManager {
 		mRequestQueue = Volley.newRequestQueue(context);
 		mCriticalRequests = new ArrayList<String>();
 	}
+
+    /**
+     * Creates a default instance of this singleton
+     *
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack A {@link HttpStack} to use.
+     * @param cache A {@link Cache} to use.
+     */
+    public static synchronized void initialize(Context context, HttpStack stack, Cache cache, Network network) {
+        if (mInstance == null) {
+            mInstance = new RequestQueueManager(context, stack, cache, network);
+        }
+    }
+
+    /**
+     * Creates a default instance of this singleton
+     *
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack A {@link HttpStack} to use.
+     * @param cache A {@link Cache} to use.
+     */
+    public static synchronized void initialize(Context context, HttpStack stack, Network network) {
+        if (mInstance == null) {
+            mInstance = new RequestQueueManager(context, stack, network);
+        }
+    }
 	
 	/**
      * Creates a default instance of this singleton

@@ -38,10 +38,11 @@ public class Volley {
      *
      * @param context A {@link Context} to use for creating the cache dir.
      * @param stack An {@link HttpStack} to use for the network, or null for default.
-     * @param cache A {@link Cache} to us for the queue.
+     * @param cache A {@link Cache} to use for the queue.
+     * @param network A {@link com.android.volley.Network} to use for this queue.
      * @return A started {@link RequestQueue} instance.
      */
-    public static RequestQueue newRequestQueue(Context context, HttpStack stack, Cache cache) {
+    public static RequestQueue newRequestQueue(Context context, HttpStack stack, Cache cache, Network network) {
         String userAgent = "volley/0";
         try {
             String packageName = context.getPackageName();
@@ -60,12 +61,43 @@ public class Volley {
             }
         }
 
-        Network network = new BasicNetwork(stack);
+        if (cache == null) {
+            File cacheDir = new File(context.getCacheDir(), DEFAULT_CACHE_DIR);
+            cache = new DiskBasedCache(cacheDir);
+        }
+
+        if (network == null) {
+            network =  new BasicNetwork(stack);
+        }
 
         RequestQueue queue = new RequestQueue(cache, network);
         queue.start();
 
         return queue;
+    }
+
+    /**
+     * Creates a default instance of the worker pool and calls {@link RequestQueue#start()} on it.
+     *
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack An {@link HttpStack} to use for the network, or null for default.
+     * @param network A {@link com.android.volley.Network} to use for this queue.
+     * @return A started {@link RequestQueue} instance.
+     */
+    public static RequestQueue newRequestQueue(Context context, HttpStack stack, Network network) {
+        return newRequestQueue(context, stack, null, network);
+    }
+
+    /**
+     * Creates a default instance of the worker pool and calls {@link RequestQueue#start()} on it.
+     *
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack An {@link HttpStack} to use for the network, or null for default.
+     * @param cache A {@link Cache} to use for the queue.
+     * @return A started {@link RequestQueue} instance.
+     */
+    public static RequestQueue newRequestQueue(Context context, HttpStack stack, Cache cache) {
+        return newRequestQueue(context, stack, cache, null);
     }
     
     /**
@@ -76,8 +108,7 @@ public class Volley {
      * @return A started {@link RequestQueue} instance.
      */
     public static RequestQueue newRequestQueue(Context context, HttpStack stack) {
-    	File cacheDir = new File(context.getCacheDir(), DEFAULT_CACHE_DIR);
-    	return newRequestQueue(context, stack, new DiskBasedCache(cacheDir));
+    	return newRequestQueue(context, stack, null, null);
     }
 
     /**
@@ -87,6 +118,6 @@ public class Volley {
      * @return A started {@link RequestQueue} instance.
      */
     public static RequestQueue newRequestQueue(Context context) {
-        return newRequestQueue(context, null);
+        return newRequestQueue(context, null, null, null);
     }
 }

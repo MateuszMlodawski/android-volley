@@ -26,7 +26,7 @@ import org.apache.http.Header;
  */
 public interface Cache {
 	/**
-     * Dispatcher types.
+     * Cache policies.
      */
     public enum Policy {
         CACHE_ONLY,
@@ -39,14 +39,14 @@ public interface Cache {
      * @param key Cache key
      * @return An {@link Entry} or null in the event of a cache miss
      */
-    public Entry get(String key);
+    public Entry<?> get(String key);
 
     /**
      * Adds or replaces an entry to the cache.
      * @param key Cache key
      * @param entry Data to store and metadata for cache coherency, TTL, etc.
      */
-    public void put(String key, Entry entry);
+    public void put(String key, Entry<?> entry);
 
     /**
      * Performs any potentially long-running actions needed to initialize the cache;
@@ -75,36 +75,68 @@ public interface Cache {
     /**
      * Data and metadata for an entry returned by the cache.
      */
-    public static class Entry {
-        /** The data returned from cache. */
-        public byte[] data;
-
-        /** ETag for cache coherency. */
-        public String etag;
-
-        /** Date of this response as reported by the server. */
-        public long serverDate;
-
-        /** TTL for this record. */
-        public long ttl;
-
-        /** Soft TTL for this record. */
-        public long softTtl;
-
-        /** Immutable response headers as received from server; must be non-null. */
-        public Map<String, String> responseHeaders = Collections.emptyMap();
+    public static class Entry<T> {
+    	
+        /** The object returned from cache. */
+        public T object;
         
-        public Header[] apacheHeaders = new Header[] {}; 
+        public byte[] data;
+        
+        public NetworkHeaders networkHeaders = new NetworkHeaders();
 
         /** True if the entry is expired. */
         public boolean isExpired() {
-            return this.ttl < System.currentTimeMillis();
+            return this.networkHeaders.ttl < System.currentTimeMillis();
         }
 
         /** True if a refresh is needed from the original data source. */
         public boolean refreshNeeded() {
-            return this.softTtl < System.currentTimeMillis();
+            return this.networkHeaders.softTtl < System.currentTimeMillis();
+        }
+        
+        /** True if the data has been parsed */
+        public boolean isParsed() {
+        	return object != null;
+        }
+        
+        public static class NetworkHeaders {
+        	
+        	/** ETag for cache coherency. */
+            public String etag;
+
+            /** Date of this response as reported by the server. */
+            public long serverDate;
+
+            /** TTL for this record. */
+            public long ttl;
+
+            /** Soft TTL for this record. */
+            public long softTtl;
+
+            /** Immutable response headers as received from server; must be non-null. */
+            public Map<String, String> responseHeaders = Collections.emptyMap();
+
+            public Header[] apacheHeaders = new Header[] {};
+        }
+        
+        public Entry(T object, byte[] data, NetworkHeaders headers) {
+        	this.object = object;
+        	this.data = data;
+        	this.networkHeaders = headers;
+            this.networkHeaders.apacheHeaders = headers.apacheHeaders;
+        }
+        
+        public Entry(T object, byte[] data) {
+        	this.object = object;
+        	this.data = data;
+        	this.networkHeaders = new NetworkHeaders();
+            this.networkHeaders.apacheHeaders = new Header[] {};
+        }
+        
+        public Entry(byte[] data) {
+        	this.data = data;
+        	this.networkHeaders = new NetworkHeaders();
+            this.networkHeaders.apacheHeaders = new Header[] {};
         }
     }
-
 }
